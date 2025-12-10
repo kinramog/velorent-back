@@ -1,3 +1,4 @@
+import { Rental } from "src/rental/entities/rental.entity";
 import { StationBicycle } from "src/station-bicycle/entities/station-bicycle.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -18,6 +19,6 @@ export class Station {
     @OneToMany(() => StationBicycle, sb => sb.station)
     station_bicycles: StationBicycle[];
 
-    // @OneToMany(() => Rental, rental => rental.station)
-    // rentals: Rental[];
+    @OneToMany(() => Rental, rental => rental.station)
+    rentals: Rental[];
 }

@@ -16,6 +16,8 @@ import { BicycleType } from './bicycle-types/entities/bicycle-type.entity';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { AuthModule } from './auth/auth.module';
+import { RentalModule } from './rental/rental.module';
+import { RentalStatusModule } from './rental-status/rental-status.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { AuthModule } from './auth/auth.module';
     UserModule,
     RoleModule,
     AuthModule,
+    RentalModule,
+    RentalStatusModule,
   ],
   controllers: [AppController],
   providers: [AppService],

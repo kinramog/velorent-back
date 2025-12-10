@@ -1,5 +1,6 @@
 import { BicycleModel } from "src/bicycle-model/entities/bicycle-model.entity";
 import { BicycleType } from "src/bicycle-types/entities/bicycle-type.entity";
+import { Rental } from "src/rental/entities/rental.entity";
 import { StationBicycle } from "src/station-bicycle/entities/station-bicycle.entity";
 import { PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, Entity, OneToMany, JoinColumn } from "typeorm";
 
@@ -40,7 +41,7 @@ export class Bicycle {
     @OneToMany(() => StationBicycle, sb => sb.bicycle)
     station_bicycle: StationBicycle[];
 
-    // @OneToMany(() => Rental, rental => rental.bicycle)
-    // rentals: Rental[];
+    @OneToMany(() => Rental, rental => rental.bicycle)
+    rentals: Rental[];
 
 }

@@ -19,14 +19,14 @@ export class StationService {
 
   // Получение всех станций проката
   async getStations() {
-    const bicycleModels = await this.stationRepository.find();
-    return bicycleModels;
+    const stations = await this.stationRepository.find();
+    return stations;
   }
 
   // Получение станции проката
   async getStation(id: number) {
-    const bicycleModel = await this.stationRepository.findOneBy({ id })
-    return bicycleModel;
+    const station = await this.stationRepository.findOneBy({ id })
+    return station;
   }
 
   // Обновление данных станции проката

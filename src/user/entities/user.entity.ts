@@ -1,5 +1,6 @@
+import { Rental } from 'src/rental/entities/rental.entity';
 import { Role } from 'src/role/entities/role.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
 @Entity()
 export class User {
@@ -25,6 +26,6 @@ export class User {
     @JoinColumn({ name: 'role_id' })
     role: Role;
 
-    // @OneToMany(() => Rental, rental => rental.user)
-    // rentals: Rental[];
+    @OneToMany(() => Rental, rental => rental.user)
+    rentals: Rental[];
 }
