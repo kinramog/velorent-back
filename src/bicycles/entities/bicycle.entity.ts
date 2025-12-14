@@ -14,6 +14,15 @@ export class Bicycle {
 
     @Column()
     description: string;
+    
+    @Column({ nullable: true })
+    frame_size: number;
+    
+    @Column({ nullable: true })
+    cyclist_min_height: number;
+    
+    @Column({ nullable: true })
+    cyclist_max_height: number;
 
     @Column({ type: 'decimal' })
     price_per_hour: number;

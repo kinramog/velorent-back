@@ -47,10 +47,12 @@ export class RentalService {
 
     const station_bicycle = await this.stationBicycleRepository.findOne({
       where: {
-        station: station,
-        bicycle: bicycle
+        station: { id: station.id },
+        bicycle: { id: bicycle.id },
       }
     });
+
+    console.log(station_bicycle);
     if (!station_bicycle) {
       throw new Error('Велосипед отсутствует на этой станции проката');
     }

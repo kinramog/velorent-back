@@ -82,6 +82,6 @@ export class StationBicycleService {
   }
 
   async removeBicycleFromStation(id: number) {
-    return `This action removes a #${id} stationBicycle`;
+    await this.stationBicycleRepository.delete(id);
   }
 }

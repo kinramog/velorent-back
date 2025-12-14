@@ -18,7 +18,14 @@ import { RoleModule } from './role/role.module';
 import { AuthModule } from './auth/auth.module';
 import { RentalModule } from './rental/rental.module';
 import { RentalStatusModule } from './rental-status/rental-status.module';
-
+import { Rental } from './rental/entities/rental.entity';
+import { RentalStatus } from './rental-status/entities/rental-status.entity';
+import { User } from './user/entities/user.entity';
+import { Role } from './role/entities/role.entity';
+import { StorageModule } from './storage/storage.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+console.log(__dirname);
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,11 +38,19 @@ import { RentalStatusModule } from './rental-status/rental-status.module';
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [Bicycle, BicycleModel, BicycleType, Station, StationBicycle],
+      entities: [Bicycle, BicycleModel, BicycleType, Station, StationBicycle, Rental, RentalStatus, User, Role],
       synchronize: true,
       autoLoadEntities: true,
 
       logging: true,
+    }),
+    ServeStaticModule.forRoot({
+      // __dirname = velorent-back/dist/
+      // rootPath = velorent-back/dist/../{путь в бразуере}
+      rootPath: join(__dirname, '..', ''),
+      serveStaticOptions: {
+        fallthrough: false,
+      },
     }),
     BicyclesModule,
     BicycleModelModule,
@@ -47,8 +62,9 @@ import { RentalStatusModule } from './rental-status/rental-status.module';
     AuthModule,
     RentalModule,
     RentalStatusModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

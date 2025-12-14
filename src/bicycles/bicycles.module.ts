@@ -6,10 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BicycleModel } from 'src/bicycle-model/entities/bicycle-model.entity';
 import { BicycleType } from 'src/bicycle-types/entities/bicycle-type.entity';
 import { Rental } from 'src/rental/entities/rental.entity';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Bicycle, BicycleModel, BicycleType, Rental])
+    TypeOrmModule.forFeature([Bicycle, BicycleModel, BicycleType, Rental]),
+    StorageModule
   ],
   controllers: [BicyclesController],
   providers: [BicyclesService],

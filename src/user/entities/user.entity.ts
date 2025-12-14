@@ -7,10 +7,10 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ nullable: true })
     fio: string;
 
-    @Column()
+    @Column({ nullable: true })
     phone: string;
 
     @Column({ unique: true })
@@ -18,6 +18,9 @@ export class User {
 
     @Column()
     password: string;
+
+    @Column({ nullable: true })
+    img_path: string;
 
     @Column({ type: 'int', default: 1 })
     tokenVersion: number;

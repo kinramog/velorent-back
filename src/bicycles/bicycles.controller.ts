@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { BicyclesService } from './bicycles.service';
 import { CreateBicycleDto } from './dto/create-bicycle.dto';
 import { UpdateBicycleDto } from './dto/update-bicycle.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/storage/multer.config';
 
 @Controller('bicycles')
 export class BicyclesController {
@@ -40,5 +42,13 @@ export class BicyclesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.bicyclesService.removeBicycle(+id);
+  }
+
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('admin')
+  @Post(':id/image')
+  @UseInterceptors(FileInterceptor('image', multerOptions))
+  async uploadImage(@Param('id') id: number, @UploadedFile() file: Express.Multer.File) {
+    return this.bicyclesService.updateImage(+id, file);
   }
 }

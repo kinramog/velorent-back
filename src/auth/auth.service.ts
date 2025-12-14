@@ -62,7 +62,19 @@ export class AuthService {
       tokenVersion: user.tokenVersion,
     });
 
-    return { access_token };
+    const res = {
+      access_token: access_token,
+      user: {
+        email: user.email,
+        fio: user.fio,
+        id: user.id,
+        img_path: user.img_path,
+        phone: user.phone,
+        role: user.role,
+        tokenVersion: user.tokenVersion
+      }
+    }
+    return res;
   }
 
   async logout(userId: number) {
