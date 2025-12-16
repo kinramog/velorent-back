@@ -1,118 +1,158 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateRentalDto } from './dto/create-rental.dto';
-import { UpdateRentalDto } from './dto/update-rental.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Station } from 'src/station/entities/station.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+
+import { Rental } from './entities/rental.entity';
+import { CreateRentalDto } from './dto/create-rental.dto';
+import { FinishRentalDto } from './dto/finish-rental.dto';
+
 import { User } from 'src/user/entities/user.entity';
 import { Bicycle } from 'src/bicycles/entities/bicycle.entity';
+import { Station } from 'src/station/entities/station.entity';
 import { RentalStatus } from 'src/rental-status/entities/rental-status.entity';
-import { Rental } from './entities/rental.entity';
-import { StationBicycle } from 'src/station-bicycle/entities/station-bicycle.entity';
+
 import { RentalStatusEnum } from './constants/rental-status.enum';
-import { FinishRentalDto } from './dto/finish-rental.dto';
 
 @Injectable()
 export class RentalService {
   constructor(
-    @InjectRepository(Rental) private rentalRepository: Repository<Rental>,
-    @InjectRepository(Station) private stationRepository: Repository<Station>,
-    @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(Bicycle) private bicycleRepository: Repository<Bicycle>,
-    @InjectRepository(RentalStatus) private rentalStatusRepository: Repository<RentalStatus>,
-    @InjectRepository(StationBicycle) private stationBicycleRepository: Repository<StationBicycle>,
+    @InjectRepository(Rental) private readonly rentalRepository: Repository<Rental>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Bicycle) private readonly bicycleRepository: Repository<Bicycle>,
+    @InjectRepository(Station) private readonly stationRepository: Repository<Station>,
+    @InjectRepository(RentalStatus) private readonly rentalStatusRepository: Repository<RentalStatus>,
   ) { }
 
-  async createRental(user_id: number, data: CreateRentalDto) {
+  // Создание аренды
+  async createRental(userId: number, data: CreateRentalDto) {
     const user = await this.userRepository.findOne({
-      where: { id: user_id },
+      where: { id: userId },
     });
-    if (!user) {
-      throw new Error('Пользователь не найден');
-    }
 
-    const bicycle = await this.bicycleRepository.findOne({
-      where: { id: data.bicycle_id }
-    });
-    if (!bicycle) {
-      throw new Error('Велосипед не найден');
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
     }
 
     const station = await this.stationRepository.findOne({
       where: { id: data.station_id },
     });
+
     if (!station) {
-      throw new Error('Станция проката не найдена');
+      throw new NotFoundException('Станция не найдена');
     }
 
-    const station_bicycle = await this.stationBicycleRepository.findOne({
-      where: {
-        station: { id: station.id },
-        bicycle: { id: bicycle.id },
-      }
-    });
-
-    if (!station_bicycle) {
-      throw new Error('Велосипед отсутствует на этой станции проката');
-    }
-
-    // Проверяем, что время старта меньше времени конца
+    // Проверка времени
     const start = new Date(data.start_time);
     const end = new Date(data.end_time);
+    const now = new Date();
 
     if (end <= start) {
-      throw new Error('Время окончания аренды должно быть больше времени старта');
+      throw new BadRequestException(
+        'Время окончания аренды должно быть больше времени начала',
+      );
     }
 
-    // Проверяем, что время старта и конца аренды больше текущего    
-    const now = new Date();
-    if (start <= now) {
-      throw new Error("Время начала аренды должно быть больше текущего");
-    }
-    if (end <= now) {
-      throw new Error("Время конца аренды должно быть больше текущего");
+    if (start <= now || end <= now) {
+      throw new BadRequestException(
+        'Время начала и окончания аренды должно быть больше текущего',
+      );
     }
 
-    // Считаем цену за аренду
-    const hours = (end.getTime() - start.getTime()) / 1000 / 3600;
-    const total_price = hours * Number(bicycle.price_per_hour);
+    // Все велосипеды нужной модели на станции
+    const bicycles = await this.bicycleRepository.find({
+      where: {
+        station: { id: station.id },
+        model: { id: data.model_id },
+      },
+      relations: {
+        model: true,
+      },
+    });
 
-    // Получаем статус аренды
+    if (!bicycles.length) {
+      throw new BadRequestException(
+        'На станции нет велосипедов этой модели',
+      );
+    }
+
+    // Ищем свободный велосипед
+    let freeBicycle: Bicycle | null = null;
+
+    for (const bicycle of bicycles) {
+      const conflict = await this.rentalRepository
+        .createQueryBuilder('rental')
+        .where('rental.bicycle_id = :bicycleId', {
+          bicycleId: bicycle.id,
+        })
+        .andWhere('rental.start_time < :end', { end })
+        .andWhere('rental.end_time > :start', { start })
+        .andWhere('rental.status_id IN (:...statuses)', {
+          statuses: [
+            RentalStatusEnum.CREATED,
+            RentalStatusEnum.ACTIVE,
+          ],
+        })
+        .getOne();
+
+      if (!conflict) {
+        freeBicycle = bicycle;
+        break;
+      }
+    }
+
+    if (!freeBicycle) {
+      throw new BadRequestException(
+        'Нет свободных велосипедов на выбранное время',
+      );
+    }
+
+    // Статус CREATED
     const status = await this.rentalStatusRepository.findOne({
-      where: { id: RentalStatusEnum.ACTIVE },
+      where: { id: RentalStatusEnum.CREATED },
     });
 
     if (!status) {
-      throw new Error('Статус аренды не найден');
+      throw new NotFoundException('Статус аренды не найден');
     }
+
+    // Предварительный расчёт стоимости
+    const hours = (end.getTime() - start.getTime()) / (1000 * 3600);
+    const totalPrice = hours * Number(freeBicycle.model.price_per_hour);
 
     const rental = this.rentalRepository.create({
       user,
-      bicycle,
+      bicycle: freeBicycle,
       station,
       status,
-      total_price,
-      start_time: data.start_time,
-      end_time: data.end_time,
-      start_time_actual: data.start_time,
-      end_time_actual: data.end_time,
+      start_time: start,
+      end_time: end,
+      start_time_actual: start,
+      end_time_actual: end,
+      total_price: totalPrice,
     });
 
-    return await this.rentalRepository.save(rental);
+    return this.rentalRepository.save(rental);
   }
 
   // Завершение аренды
-  async finishRental(rental_id: number, data: FinishRentalDto) {
+  async finishRental(
+    rentalId: number,
+    data: FinishRentalDto,
+  ) {
     const rental = await this.rentalRepository.findOne({
-      where: { id: rental_id },
+      where: { id: rentalId },
       relations: {
-        user: true,
-        status: true
+        bicycle: true,
+        status: true,
       },
     });
 
     if (!rental) {
-      throw new Error("Аренда не найдена");
+      throw new NotFoundException('Аренда не найдена');
     }
 
     if (rental.status.id !== RentalStatusEnum.ACTIVE) {
@@ -123,35 +163,84 @@ export class RentalService {
       where: { id: RentalStatusEnum.COMPLETED },
     });
 
+    if (!status) {
+      throw new NotFoundException('Статус аренды не найден');
+    }
+
     rental.end_time_actual = data.end_time_actual
       ? new Date(data.end_time_actual)
       : rental.end_time;
 
-    const hours = (rental.end_time_actual.getTime() - rental.start_time.getTime()) / (1000 * 3600);
-    rental.total_price = hours * Number(rental.bicycle.price_per_hour);
+    const hours =
+      (rental.end_time_actual.getTime() -
+        rental.start_time.getTime()) /
+      (1000 * 3600);
+
+    rental.total_price =
+      hours * Number(rental.bicycle.model.price_per_hour);
+
+    rental.status = status;
 
     return this.rentalRepository.save(rental);
   }
 
-  async getUserRentalHistory(user_id: number) {
-    const history = await this.rentalRepository.find({
-      where: {
-        user:
-          { id: user_id }
-      },
+  // Отмена аренды
+  async cancelRental(rentalId: number) {
+    const rental = await this.rentalRepository.findOne({
+      where: { id: rentalId },
+      relations: { status: true },
+    });
+
+    if (!rental) {
+      throw new NotFoundException('Аренда не найдена');
+    }
+
+    if (rental.status.id !== RentalStatusEnum.CREATED) {
+      throw new BadRequestException(
+        'Отменить можно только созданную аренду',
+      );
+    }
+
+    const status = await this.rentalStatusRepository.findOne({
+      where: { id: RentalStatusEnum.CANCELLED },
+    });
+
+    if (!status) {
+      throw new NotFoundException('Статус аренды не найден');
+    }
+
+    rental.status = status;
+    return this.rentalRepository.save(rental);
+  }
+
+  // История аренд пользователя
+  async getUserRentalHistory(userId: number) {
+    console.log(userId);
+    return this.rentalRepository.find({
+      where: { user: { id: userId } },
       relations: {
-        bicycle: true,
+        bicycle: {
+          model: {
+            type: true
+          },
+        },
         station: true,
-        status: true
+        status: true,
       },
       order: { start_time: 'DESC' },
     });
-    return history;
   }
 
+  // Получение аренды по id
   async getRental(id: number) {
-    const rental = await this.stationRepository.findOneBy({ id })
-    return rental;
+    return this.rentalRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+        bicycle: true,
+        station: true,
+        status: true,
+      },
+    });
   }
-
 }

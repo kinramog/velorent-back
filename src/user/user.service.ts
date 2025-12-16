@@ -76,8 +76,7 @@ export class UserService {
   }
 
   async incrementTokenVersion(userId: number) {
-    const user = await this.findById(userId);
-
+    const user = await this.findById(userId);   
     if (user) {
       user.tokenVersion++;
       return this.userRepository.save(user);

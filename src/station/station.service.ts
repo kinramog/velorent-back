@@ -5,11 +5,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Station } from './entities/station.entity';
 import { Repository } from 'typeorm';
 import { StorageService } from 'src/storage/storage.service';
+import { Bicycle } from 'src/bicycles/entities/bicycle.entity';
 
 @Injectable()
 export class StationService {
   constructor(
     @InjectRepository(Station) private stationRepository: Repository<Station>,
+    @InjectRepository(Bicycle) private bicycleRepository: Repository<Bicycle>,
     private readonly storageService: StorageService,
   ) { }
 
@@ -29,6 +31,26 @@ export class StationService {
   async getStation(id: number) {
     const station = await this.stationRepository.findOneBy({ id })
     return station;
+  }
+
+  async getStationsByBicycleModel(modelId: number) {
+    // Берем все велосипеды этой модели с их станциями
+    const bicycles = await this.bicycleRepository.find({
+      where: { model: { id: modelId } },
+      relations: {
+        station: true
+      },
+    });
+
+    // Собираем уникальные станции
+    const stationMap = new Map<number, Station>();
+    bicycles.forEach(bike => {
+      if (bike.station) {
+        stationMap.set(bike.station.id, bike.station);
+      }
+    });
+
+    return Array.from(stationMap.values());
   }
 
   // Обновление данных станции проката

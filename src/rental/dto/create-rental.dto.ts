@@ -5,7 +5,7 @@ export class CreateRentalDto {
     station_id: number;
 
     @IsNotEmpty()
-    bicycle_id: number;
+    model_id: number;
 
     @IsNotEmpty()
     start_time: string;

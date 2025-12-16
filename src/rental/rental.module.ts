@@ -7,11 +7,11 @@ import { Bicycle } from 'src/bicycles/entities/bicycle.entity';
 import { Station } from 'src/station/entities/station.entity';
 import { RentalStatus } from 'src/rental-status/entities/rental-status.entity';
 import { Rental } from './entities/rental.entity';
-import { StationBicycle } from 'src/station-bicycle/entities/station-bicycle.entity';
+import { BicycleModel } from 'src/bicycle-model/entities/bicycle-model.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Rental, Station, Bicycle, User, RentalStatus, StationBicycle])
+    TypeOrmModule.forFeature([Rental, Station, Bicycle, User, RentalStatus, BicycleModel ])
   ],
   controllers: [RentalController],
   providers: [RentalService],

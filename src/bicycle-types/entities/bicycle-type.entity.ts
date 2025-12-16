@@ -1,4 +1,4 @@
-import { Bicycle } from "src/bicycles/entities/bicycle.entity";
+import { BicycleModel } from "src/bicycle-model/entities/bicycle-model.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -9,6 +9,6 @@ export class BicycleType {
     @Column()
     name: string;
 
-    @OneToMany(() => Bicycle, bicycle => bicycle.type)
-    bicycles: Bicycle[];
+    @OneToMany(() => BicycleModel, bicycle_models => bicycle_models.type)
+    bicycle_models: BicycleModel[];
 }

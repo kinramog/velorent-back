@@ -6,11 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BicyclesModule } from './bicycles/bicycles.module';
 import { BicycleModelModule } from './bicycle-model/bicycle-model.module';
 import { StationModule } from './station/station.module';
-import { StationBicycleModule } from './station-bicycle/station-bicycle.module';
 import { Bicycle } from './bicycles/entities/bicycle.entity';
 import { BicycleModel } from './bicycle-model/entities/bicycle-model.entity';
 import { Station } from './station/entities/station.entity';
-import { StationBicycle } from './station-bicycle/entities/station-bicycle.entity';
 import { BicycleTypesModule } from './bicycle-types/bicycle-types.module';
 import { BicycleType } from './bicycle-types/entities/bicycle-type.entity';
 import { UserModule } from './user/user.module';
@@ -38,7 +36,7 @@ console.log(__dirname);
       username: process.env.POSTGRES_USERNAME,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [Bicycle, BicycleModel, BicycleType, Station, StationBicycle, Rental, RentalStatus, User, Role],
+      entities: [Bicycle, BicycleModel, BicycleType, Station, Rental, RentalStatus, User, Role],
       synchronize: true,
       autoLoadEntities: true,
 
@@ -55,7 +53,6 @@ console.log(__dirname);
     BicyclesModule,
     BicycleModelModule,
     StationModule,
-    StationBicycleModule,
     BicycleTypesModule,
     UserModule,
     RoleModule,

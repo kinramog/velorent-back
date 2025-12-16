@@ -12,6 +12,12 @@ import { multerOptions } from 'src/storage/multer.config';
 export class StationController {
   constructor(private readonly stationService: StationService) { }
 
+  // Получаем станции по модели велосипеда
+  @Get('bicycle-model/:model_id')
+  getStationsByBicycleModel(@Param('model_id') model_id: string) {
+    return this.stationService.getStationsByBicycleModel(+model_id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Post()
