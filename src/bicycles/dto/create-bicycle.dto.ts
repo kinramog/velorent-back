@@ -35,7 +35,6 @@ export class CreateBicycleDto {
     @IsNotEmpty()
     model_id: number;
 
-    @IsNumber()
     @IsNotEmpty()
     img_path: string;
 }

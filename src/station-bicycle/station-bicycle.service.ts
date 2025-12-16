@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateStationBicycleDto } from './dto/create-station-bicycle.dto';
 import { ChangeBicycleQuantityOnStationDto } from './dto/change-bicycle-quantity.dto';
 import { Bicycle } from 'src/bicycles/entities/bicycle.entity';
-import { In, Repository } from 'typeorm';
+import { In, MoreThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Station } from 'src/station/entities/station.entity';
 import { StationBicycle } from './entities/station-bicycle.entity';
@@ -19,14 +19,14 @@ export class StationBicycleService {
   async addBicycleToStation(data: CreateStationBicycleDto) {
     const bicycles = await this.bicycleRepository.find({
       where: {
-        id: In([data.bicycle_id])
+        id: data.bicycle_id
       }
     });
     const bicycle = bicycles[0];
 
     const stations = await this.stationRepository.find({
       where: {
-        id: In([data.station_id])
+        id: data.station_id
       }
     });
     const station = stations[0];
@@ -47,8 +47,24 @@ export class StationBicycleService {
   }
 
   async getAllBicycleStations() {
-    const bicycles = await this.bicycleRepository.find();
-    return bicycles;
+    const stationBicycles = await this.stationBicycleRepository.find();
+    return stationBicycles;
+  }
+
+  // Получение всех станций, на которых есть этот велосипед
+  async getBicycleStations(bicycle_id: number) {
+    const stationBicycle = await this.stationBicycleRepository.find({
+      where: {
+        bicycle: In([bicycle_id]),
+        quantity: MoreThan(0) 
+      },
+      relations: {
+        station: true,
+        bicycle: true
+      }
+    });
+
+    return stationBicycle;
   }
 
   async getBicycleStation(id: number) {
@@ -61,7 +77,7 @@ export class StationBicycleService {
         bicycle: true
       },
       where: {
-        id: In([id])
+        id: id
       }
     });
     const oldStationBicycle = oldStationBicycles[0];

@@ -5,7 +5,7 @@ import { ChangeBicycleQuantityOnStationDto } from './dto/change-bicycle-quantity
 
 @Controller('station-bicycle')
 export class StationBicycleController {
-  constructor(private readonly stationBicycleService: StationBicycleService) {}
+  constructor(private readonly stationBicycleService: StationBicycleService) { }
 
   // Добавление велосипеда на станцию проката
   @Post()
@@ -19,9 +19,10 @@ export class StationBicycleController {
     return this.stationBicycleService.getAllBicycleStations();
   }
 
-  @Get(':id')
-  getBicycleStation(@Param('id') id: string) {
-    return this.stationBicycleService.getBicycleStation(+id);
+  // Получение всех станций, на которых есть велосипед
+  @Get('bicycle/:id')
+  getBicycleStations(@Param('id') id: string) {
+    return this.stationBicycleService.getBicycleStations(+id);
   }
 
   // Изменить связь велосипедов и станций
@@ -34,5 +35,10 @@ export class StationBicycleController {
   @Delete(':id')
   removeBicycleFromStation(@Param('id') id: string) {
     return this.stationBicycleService.removeBicycleFromStation(+id);
+  }
+
+  @Get(':id')
+  getBicycleStation(@Param('id') id: string) {
+    return this.stationBicycleService.getBicycleStation(+id);
   }
 }

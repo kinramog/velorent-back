@@ -44,8 +44,8 @@ export class BicyclesController {
     return this.bicyclesService.removeBicycle(+id);
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post(':id/image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadImage(@Param('id') id: number, @UploadedFile() file: Express.Multer.File) {

@@ -28,8 +28,14 @@ export class BicyclesService {
 
   // Получение велосипеда по id
   async getBicycle(bicycle_id: number) {
-    const bicycle = await this.bicycleRepository.findOneBy({ id: bicycle_id })
-    return bicycle;
+    const bicycle = await this.bicycleRepository.find({
+      where: { id: bicycle_id },
+      relations: {
+        model: true,
+        type: true
+      }
+    })
+    return bicycle[0];
   }
 
   // Создание велосипеда 

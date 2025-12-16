@@ -1,6 +1,6 @@
 export enum RentalStatusEnum {
   CREATED = 1,
-  ACTIVE = 2,
-  COMPLETED = 3,
+  COMPLETED = 2,
+  ACTIVE = 3,
   CANCELLED = 4,
 }

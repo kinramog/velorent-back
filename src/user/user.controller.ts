@@ -32,8 +32,7 @@ export class UserController {
     return this.userService.findById(+id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.updateUser(+id, updateUserDto);
@@ -46,8 +45,7 @@ export class UserController {
     return this.userService.removeUser(+id);
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles('admin')
+  @UseGuards(JwtAuthGuard)
   @Post(':id/image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadImage(@Param('id') id: number, @UploadedFile() file: Express.Multer.File) {

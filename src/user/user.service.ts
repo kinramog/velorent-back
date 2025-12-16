@@ -53,14 +53,22 @@ export class UserService {
 
   async findById(id: number) {
     const users = await this.userRepository.find({
-      where: { id: In[id] },
+      where: { id: id },
       relations: { role: true }
     })
+
     return users[0];
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(id: number, data: UpdateUserDto) {
+    const user = this.userRepository.create({
+      id: id,
+      fio: data.fio,
+      phone: data.phone,
+      email: data.email,
+    });
+
+    return await this.userRepository.save(user);
   }
 
   async removeUser(id: number) {
@@ -69,10 +77,12 @@ export class UserService {
 
   async incrementTokenVersion(userId: number) {
     const user = await this.findById(userId);
+
     if (user) {
       user.tokenVersion++;
       return this.userRepository.save(user);
     }
+
   }
 
   // Добавление изображения

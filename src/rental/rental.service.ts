@@ -52,7 +52,6 @@ export class RentalService {
       }
     });
 
-    console.log(station_bicycle);
     if (!station_bicycle) {
       throw new Error('Велосипед отсутствует на этой станции проката');
     }
