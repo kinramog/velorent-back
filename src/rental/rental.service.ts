@@ -146,11 +146,11 @@ export class RentalService {
     const rental = await this.rentalRepository.findOne({
       where: { id: rentalId },
       relations: {
-        bicycle: true,
+        bicycle: { model: true },
         status: true,
       },
     });
-
+    console.log(rental);
     if (!rental) {
       throw new NotFoundException('Аренда не найдена');
     }
@@ -167,17 +167,11 @@ export class RentalService {
       throw new NotFoundException('Статус аренды не найден');
     }
 
-    rental.end_time_actual = data.end_time_actual
-      ? new Date(data.end_time_actual)
-      : rental.end_time;
+    rental.end_time_actual = data.end_time_actual ? new Date(data.end_time_actual) : rental.end_time;
 
-    const hours =
-      (rental.end_time_actual.getTime() -
-        rental.start_time.getTime()) /
-      (1000 * 3600);
+    const hours = (rental.end_time_actual.getTime() - rental.start_time.getTime()) / (1000 * 3600);
 
-    rental.total_price =
-      hours * Number(rental.bicycle.model.price_per_hour);
+    rental.total_price = hours * Number(rental.bicycle.model.price_per_hour);
 
     rental.status = status;
 
@@ -215,7 +209,6 @@ export class RentalService {
 
   // История аренд пользователя
   async getUserRentalHistory(userId: number) {
-    console.log(userId);
     return this.rentalRepository.find({
       where: { user: { id: userId } },
       relations: {
@@ -226,6 +219,24 @@ export class RentalService {
         },
         station: true,
         status: true,
+      },
+      order: { start_time: 'DESC' },
+    });
+  }
+
+  // Все активные аренды
+  async getAllActiveRentals() {
+    return this.rentalRepository.find({
+      where: { status: { id: RentalStatusEnum.ACTIVE } },
+      relations: {
+        bicycle: {
+          model: {
+            type: true
+          },
+        },
+        station: true,
+        status: true,
+        user: true,
       },
       order: { start_time: 'DESC' },
     });

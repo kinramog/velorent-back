@@ -34,6 +34,13 @@ export class RentalController {
     return this.rentalService.finishRental(+id, dto);
   }
 
+  // Получение всех аренд
+  @UseGuards(JwtAuthGuard)
+  @Get('/all-rentals')
+  getAllActiveRentals() {
+    return this.rentalService.getAllActiveRentals();
+  }
+
   // Отмена аренды
   @UseGuards(JwtAuthGuard)
   @Patch(':id/cancel')
