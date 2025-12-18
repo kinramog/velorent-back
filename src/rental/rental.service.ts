@@ -148,6 +148,8 @@ export class RentalService {
       relations: {
         bicycle: { model: true },
         status: true,
+        user: true,
+        station: true
       },
     });
     console.log(rental);
@@ -174,7 +176,7 @@ export class RentalService {
     rental.total_price = hours * Number(rental.bicycle.model.price_per_hour);
 
     rental.status = status;
-
+    console.log(rental);
     return this.rentalRepository.save(rental);
   }
 
@@ -227,7 +229,6 @@ export class RentalService {
   // Все активные аренды
   async getAllActiveRentals() {
     return this.rentalRepository.find({
-      where: { status: { id: RentalStatusEnum.ACTIVE } },
       relations: {
         bicycle: {
           model: {
