@@ -7,6 +7,8 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/storage/multer.config';
+
+
 @Controller('bicycle-model')
 export class BicycleModelController {
   constructor(private readonly bicycleModelService: BicycleModelService) { }

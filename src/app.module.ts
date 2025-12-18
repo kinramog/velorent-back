@@ -23,6 +23,7 @@ import { Role } from './role/entities/role.entity';
 import { StorageModule } from './storage/storage.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AdminModule } from './admin/admin.module';
 console.log(__dirname);
 @Module({
   imports: [
@@ -60,6 +61,7 @@ console.log(__dirname);
     RentalModule,
     RentalStatusModule,
     StorageModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

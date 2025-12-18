@@ -1,8 +1,7 @@
 import { BicycleType } from 'src/bicycle-types/entities/bicycle-type.entity';
 import { Bicycle } from 'src/bicycles/entities/bicycle.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VirtualColumn } from 'typeorm';
 
-@Entity()
 @Entity()
 export class BicycleModel {
     @PrimaryGeneratedColumn()
@@ -41,4 +40,12 @@ export class BicycleModel {
 
     @OneToMany(() => Bicycle, bicycle => bicycle.model)
     bicycles: Bicycle[];
+
+    @VirtualColumn({
+        query: (alias) => `
+            SELECT COUNT(*)
+            FROM bicycle b
+            WHERE b.model_id = ${alias}.id`
+    })
+    bicycles_count: number;
 }

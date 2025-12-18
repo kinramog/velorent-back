@@ -8,6 +8,8 @@ import { Station } from 'src/station/entities/station.entity';
 
 import { CreateBicycleDto } from './dto/create-bicycle.dto';
 import { UpdateBicycleDto } from './dto/update-bicycle.dto';
+import { BulkCreateBicycleDto } from './dto/bulk-create-bicycle.dto';
+import { RentalStatusEnum } from 'src/rental/constants/rental-status.enum';
 
 @Injectable()
 export class BicyclesService {
@@ -106,4 +108,63 @@ export class BicyclesService {
     const bicycle = await this.getBicycle(id);
     await this.bicycleRepository.remove(bicycle);
   }
+
+  // Создание сразу нескольких велосипедов на станции
+  async bulkCreate(dto: BulkCreateBicycleDto) {
+    const model = await this.modelRepository.findOne({
+      where: { id: dto.model_id },
+    });
+
+    if (!model) {
+      throw new NotFoundException("Модель велосипеда не найдена");
+    }
+
+    const station = await this.stationRepository.findOne({
+      where: { id: dto.station_id },
+    });
+
+    if (!station) {
+      throw new NotFoundException("Станция не найдена");
+    }
+
+    const bicycles = Array.from({ length: dto.count }).map(() =>
+      this.bicycleRepository.create({
+        model,
+        station,
+      })
+    );
+
+    await this.bicycleRepository.save(bicycles);
+
+    return { created: bicycles.length };
+  }
+
+  async bulkRemove(dto: BulkCreateBicycleDto) {
+    // Получаем доступные велосипеды этой модели на станции
+    const bikes = await this.bicycleRepository.find({
+      where: {
+        model: { id: dto.model_id },
+        station: { id: dto.station_id },
+      },
+      relations: ['rentals'],
+    });
+
+    // Фильтруем только свободные (нет активной аренды)
+    const removable = bikes.filter(bike =>
+      !bike.rentals.some(r => r.status.id === RentalStatusEnum.ACTIVE)
+    );
+
+    if (removable.length === 0) {
+      throw new Error('Нет доступных велосипедов для удаления');
+    }
+
+    // Ограничиваем по count
+    const toRemove = removable.slice(0, dto.count);
+
+    await this.bicycleRepository.remove(toRemove);
+
+    return { removed: toRemove.length };
+  }
+
+
 }

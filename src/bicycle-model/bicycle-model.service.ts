@@ -18,7 +18,7 @@ export class BicycleModelService {
   // Получение всех моделей
   async getAllModels() {
     return await this.modelRepository.find({
-      relations: ['bicycles']
+      relations: ['bicycles', 'type']
     });
   }
 

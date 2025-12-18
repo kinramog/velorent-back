@@ -13,8 +13,11 @@ export class Station {
     @Column()
     address: string;
 
-    @Column()
+    @Column({ nullable: true })
     img_path: string;
+    
+    @Column({ nullable: true })
+    description: string;
 
     @OneToMany(() => Bicycle, bicycle => bicycle.station)
     bicycles: Bicycle[];

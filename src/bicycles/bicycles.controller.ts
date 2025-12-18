@@ -14,6 +14,7 @@ import { UpdateBicycleDto } from './dto/update-bicycle.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { BulkCreateBicycleDto } from './dto/bulk-create-bicycle.dto';
 
 @Controller('bicycles')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -52,5 +53,17 @@ export class BicyclesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.bicyclesService.removeBicycle(+id);
+  }
+
+  // Добавление нескольких велосипедов на станцию
+  @Post("bulk")
+  bulkCreate(@Body() dto: BulkCreateBicycleDto) {
+    return this.bicyclesService.bulkCreate(dto);
+  }
+  
+  // Удаление нескольких велосипедов со станции
+  @Delete('bulk-remove')
+  bulkRemove(@Body() dto: BulkCreateBicycleDto) {
+    return this.bicyclesService.bulkRemove(dto);
   }
 }
