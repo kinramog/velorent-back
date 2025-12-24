@@ -18,7 +18,7 @@ export class CreateBicycleModelDto {
 
     @IsNotEmpty()
     cyclist_max_height: number;
-
+    
     img_path: string;
 
     @IsNotEmpty()

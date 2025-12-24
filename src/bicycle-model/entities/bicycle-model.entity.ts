@@ -25,7 +25,7 @@ export class BicycleModel {
     @Column({ nullable: true })
     cyclist_max_height: number;
 
-    @Column()
+    @Column({nullable: true})
     img_path: string;
 
     @CreateDateColumn()
