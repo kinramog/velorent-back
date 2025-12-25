@@ -48,6 +48,13 @@ export class RentalController {
     return this.rentalService.cancelRental(+id);
   }
 
+  // Старт аренды
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/start')
+  startRental(@Param('id') id: string) {
+    return this.rentalService.startRental(+id);
+  }
+
 
   // История аренд пользователя
   @UseGuards(JwtAuthGuard)

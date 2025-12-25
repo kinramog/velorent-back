@@ -209,6 +209,35 @@ export class RentalService {
     return this.rentalRepository.save(rental);
   }
 
+  // Старт аренды
+  async startRental(rentalId: number) {
+    const rental = await this.rentalRepository.findOne({
+      where: { id: rentalId },
+      relations: { status: true },
+    });
+
+    if (!rental) {
+      throw new NotFoundException('Аренда не найдена');
+    }
+
+    if (rental.status.id !== RentalStatusEnum.CREATED) {
+      throw new BadRequestException(
+        'Стартовать можно только созданную аренду',
+      );
+    }
+
+    const status = await this.rentalStatusRepository.findOne({
+      where: { id: RentalStatusEnum.ACTIVE },
+    });
+
+    if (!status) {
+      throw new NotFoundException('Статус аренды не найден');
+    }
+
+    rental.status = status;
+    return this.rentalRepository.save(rental);
+  }
+
   // История аренд пользователя
   async getUserRentalHistory(userId: number) {
     return this.rentalRepository.find({
